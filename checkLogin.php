@@ -1,12 +1,8 @@
 <?php
 session_start();
 
-// Uso de namespaces en lugar de require_once
 use Inc\Config\Constants;
 use Inc\Config\Db;
-
-require_once '../../inc/config/constants.php';
-require_once '../../inc/config/db.php';
 
 // Inicialización de variables
 $loginUsername = '';
@@ -37,6 +33,9 @@ if (isset($_POST['loginUsername'])) {
 
         // Encriptar la contraseña
         $hashedPassword = md5($loginPassword);
+
+        // Obtener la conexión desde la clase Db
+        $conn = Db::getConnection();
 
         // Consultar las credenciales en la base de datos
         $checkUserSql = 'SELECT * FROM user WHERE username = :username AND password = :password';
