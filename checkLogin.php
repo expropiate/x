@@ -1,47 +1,54 @@
 <?php
 session_start();
 
+// Uso de namespaces en lugar de require_once
 use Inc\Config\Constants;
 use Inc\Config\Db;
 
 require_once '../../inc/config/constants.php';
 require_once '../../inc/config/db.php';
 
+// Inicialización de variables
 $loginUsername = '';
 $loginPassword = '';
 $hashedPassword = '';
 
+// Verificar si se recibió un POST con 'loginUsername'
 if (isset($_POST['loginUsername'])) {
     $loginUsername = $_POST['loginUsername'];
     $loginPassword = $_POST['loginPassword'];
 
+    // Validar que los campos no estén vacíos
     if (!empty($loginUsername) && !empty($loginPassword)) {
-        // Sanitize username
+        // Sanitizar el username
         $loginUsername = filter_var($loginUsername, FILTER_SANITIZE_STRING);
 
-        // Check if username is empty
+        // Validar que username no esté vacío tras sanitización
         if ($loginUsername === '') {
             echo '<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert">&times;</button>Please enter Username</div>';
             exit();
         }
 
-        // Check if password is empty
+        // Validar que password no esté vacío
         if ($loginPassword === '') {
             echo '<div class="alert alert-danger"><button type="button" class="close" data-dismiss="alert">&times;</button>Please enter Password</div>';
             exit();
         }
 
-        // Encrypt the password
+        // Encriptar la contraseña
         $hashedPassword = md5($loginPassword);
 
-        // Check the given credentials
+        // Consultar las credenciales en la base de datos
         $checkUserSql = 'SELECT * FROM user WHERE username = :username AND password = :password';
         $checkUserStatement = $conn->prepare($checkUserSql);
-        $checkUserStatement->execute(['username' => $loginUsername, 'password' => $hashedPassword]);
+        $checkUserStatement->execute([
+            'username' => $loginUsername,
+            'password' => $hashedPassword
+        ]);
 
-        // Check if user exists or not
+        // Verificar si existe el usuario
         if ($checkUserStatement->rowCount() > 0) {
-            // Valid credentials. Hence, start the session
+            // Credenciales válidas: iniciar sesión
             $row = $checkUserStatement->fetch(PDO::FETCH_ASSOC);
             $_SESSION['loggedIn'] = '1';
             $_SESSION['fullName'] = $row['fullName'];
